@@ -24,4 +24,7 @@ jobs:
           pip install pytest
  
       - name: Run tests (Apply stage)
-        run: pytest addition.py
+        #run: pytest addition.py
+        run: |
+          cd src
+          python -m pytest addition.py
