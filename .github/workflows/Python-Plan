@@ -2,6 +2,7 @@ name: Python Plan
  
 on:
   pull_request:
+    types: [labeled, opened, synchronize]
  
 jobs:
   python-plan:
@@ -16,5 +17,8 @@ jobs:
         with:
           python-version: "3.11"
  
-      - name: Upgrade pip only (Plan stage)
-        run: python -m pip install --upgrade pip
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+            
