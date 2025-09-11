@@ -5,7 +5,7 @@ on:
     types: [labeled, opened, synchronize]
  
 jobs:
-  python-plan:
+  build:
     runs-on: ubuntu-latest
  
     steps:
