@@ -6,7 +6,8 @@ on:
  
 jobs:
   python-apply:
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'ok')
+    #if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'ok')
+    if: github.event.pull_request.merged == true && !contains(join(github.event.pull_request.labels.*.name, ','), 'no-changes')
     runs-on: ubuntu-latest
  
     steps:
