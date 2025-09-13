@@ -7,10 +7,20 @@ on:
 jobs:
   python-apply:
     #if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'ok')
-    if: github.event.pull_request.merged == true && !contains(join(github.event.pull_request.labels.*.name, ','), 'no-changes')
+    #if: github.event.pull_request.merged == true && !contains(join(github.event.pull_request.labels.*.name, ','), 'no-changes')
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env: [dev1, dev2]
  
     steps:
+      - name: Skip if env has no-changes label
+        if: contains(github.event.pull_request.labels.*.name, format('aws_${{ matrix.env }}/no-changes')) == true
+        run: |
+          echo "Skipping APPLY for ${{ matrix.env }} because label aws_${{ matrix.env }}/no-changes is present"
+          exit 0
+          
       - name: Checkout
         uses: actions/checkout@v4
  
@@ -27,5 +37,7 @@ jobs:
       - name: Run tests (Apply stage)
         #run: pytest addition.py
         run: |
+          echo "Running test in env: ${{ matrix.env }}"
           cd src
           python -m pytest addition.py
+          python addition.py

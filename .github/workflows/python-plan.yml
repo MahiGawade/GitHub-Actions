@@ -6,7 +6,10 @@ on:
 
 jobs:
   python-plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    
+    strategy:
+      matrix:
+        env: [dev1, dev2]
 
     steps:
       - name: Checkout
