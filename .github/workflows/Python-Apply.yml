@@ -26,7 +26,7 @@ jobs:
           labels="${{ join(github.event.pull_request.labels.*.name, ' ') }}"
           if [[ "$labels" == *"aws_${{ matrix.env }}/no-changes"* ]]; then
             echo "Skipping APPLY for ${{ matrix.env }} because label aws_${{ matrix.env }}/no-changes is present"
-            exit 0
+            exit 78
           fi
           
       - name: Checkout
