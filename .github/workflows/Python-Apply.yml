@@ -15,11 +15,19 @@ jobs:
         env: [dev1, dev2]
  
     steps:
-      - name: Skip if env has no-changes label
-        if: contains(github.event.pull_request.labels.*.name, format('aws_${{ matrix.env }}/no-changes')) == true
+      #- name: Skip if env has no-changes label
+        # if: contains(github.event.pull_request.labels.*.name, format('aws_${{ matrix.env }}/no-changes')) == true
+        # run: |
+        #   echo "Skipping APPLY for ${{ matrix.env }} because label aws_${{ matrix.env }}/no-changes is present"
+        #   exit 0
+        
+      - name: Check if this env should be skipped
         run: |
-          echo "Skipping APPLY for ${{ matrix.env }} because label aws_${{ matrix.env }}/no-changes is present"
-          exit 0
+          labels="${{ join(github.event.pull_request.labels.*.name, ' ') }}"
+          if [[ "$labels" == *"aws_${{ matrix.env }}/no-changes"* ]]; then
+            echo "Skipping APPLY for ${{ matrix.env }} because label aws_${{ matrix.env }}/no-changes is present"
+            exit 0
+          fi
           
       - name: Checkout
         uses: actions/checkout@v4
