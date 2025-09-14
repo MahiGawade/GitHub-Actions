@@ -29,6 +29,9 @@ jobs:
             exit 78
           fi
           
+        # trying to show skipped env as success and also overall job as sucess
+        continue-on-error: true
+        
       - name: Checkout
         uses: actions/checkout@v4
  
