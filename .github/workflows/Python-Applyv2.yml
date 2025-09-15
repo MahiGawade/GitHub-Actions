@@ -1,9 +1,9 @@
 name: Python Apply
- 
+
 on:
   pull_request:
     types: [closed]
- 
+
 jobs:
   set-matrix:
     if: github.event.pull_request.merged == true
@@ -13,15 +13,15 @@ jobs:
     steps:
       - name: Debug labels
         run: echo "Raw labels: ${{ join(github.event.pull_request.labels.*.name, ' | ') }}"
- 
+
       - id: set-matrix
         run: |
           # Define the environments you want to target
           envs=("dev1" "dev2")
- 
+
           labels="${{ join(github.event.pull_request.labels.*.name, ' ') }}"
           echo "Labels string: $labels"
- 
+
           filtered=()
           for env in "${envs[@]}"; do
             if [[ "$labels" == *"aws_${env}/no-changes"* ]]; then
@@ -30,11 +30,11 @@ jobs:
               filtered+=("\"$env\"")
             fi
           done
- 
+
           matrix="[$(IFS=,; echo "${filtered[*]}")]"
           echo "Filtered matrix: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
- 
+
   python-apply:
     needs: set-matrix
     if: needs.set-matrix.outputs.matrix != '[]'
@@ -42,30 +42,30 @@ jobs:
     strategy:
       matrix:
         env: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
- 
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
- 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
- 
+
       - name: Debug repo contents
         run: ls -R .
- 
+
       - name: Install dependencies
         run: |
           echo "Installing dependencies for environment: ${{ matrix.env }}"
           python -m pip install --upgrade pip
           pip install pytest
- 
+
       - name: Run tests
         run: |
           echo "Running tests in environment: ${{ matrix.env }}"
           python -m pytest GitHub-Actions/src/addition.py || echo "No tests found in addition.py"
- 
+
       - name: Show script output
         run: |
           echo "Script output for environment: ${{ matrix.env }}"
