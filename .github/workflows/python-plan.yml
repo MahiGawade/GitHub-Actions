@@ -2,7 +2,7 @@ name: Python Plan
 
 on:
   pull_request:
-    types: [labeled, opened, reopened]
+    types: [synchronize, opened, reopened]
 
 jobs:
   python-plan:
