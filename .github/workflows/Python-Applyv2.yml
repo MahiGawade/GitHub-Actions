@@ -50,7 +50,5 @@ jobs:
  
       - name: Dummy Apply
         run: |
-          cd src
           echo "Applying changes for environment: ${{ matrix.env }}"
-          python addition.py
           # Replace this with terraform apply or your real command
