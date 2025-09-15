@@ -9,68 +9,48 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.filter.outputs.matrix }}
     steps:
-      - name: Debug labels
+      - name: Debug Labels
         run: echo "Raw labels: ${{ join(github.event.pull_request.labels.*.name, ' | ') }}"
  
-      - id: set-matrix
+      - name: Collect Labels
+        id: labels
         run: |
-          # Define the environments you want to target
-          envs=("dev1" "dev2")
+          echo "labels=${{ join(github.event.pull_request.labels.*.name, ' ') }}" >> $GITHUB_OUTPUT
  
-          labels="${{ join(github.event.pull_request.labels.*.name, ' ') }}"
-          echo "Labels string: $labels"
+      - name: Filter Matrix
+        id: filter
+        run: |
+          ALL_ENVS=("dev1" "dev2")
+          LABELS="${{ steps.labels.outputs.labels }}"
+          echo "Labels: $LABELS"
  
-          filtered=()
-          for env in "${envs[@]}"; do
-            if [[ "$labels" == *"aws_${env}/no-changes"* ]]; then
-              echo "Skipping $env because of aws_${env}/no-changes"
+          FILTERED="[]"
+          for env in "${ALL_ENVS[@]}"; do
+            if echo "$LABELS" | grep -q "aws_${env}/no-changes"; then
+              echo "Skipping $env because of aws_${env}/no-changes label"
             else
-              filtered+=("\"$env\"")
+              FILTERED=$(jq -nc --argjson arr "$FILTERED" --arg e "$env" '$arr + [$e]')
             fi
           done
  
-          matrix="[$(IFS=,; echo "${filtered[*]}")]"
-          echo "Filtered matrix: $matrix"
-          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "Final matrix: $FILTERED"
+          echo "matrix=$FILTERED" >> $GITHUB_OUTPUT
  
   python-apply:
     needs: set-matrix
-    if: needs.set-matrix.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
         env: ${{ fromJson(needs.set-matrix.outputs.matrix) }}
- 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
  
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
- 
-      - name: Debug repo contents
-        run: ls -R .
- 
-      - name: Install dependencies
+      - name: Dummy Apply
         run: |
-          echo "Installing dependencies for environment: ${{ matrix.env }}"
-          python -m pip install --upgrade pip
-          pip install pytest
- 
-      - name: Run tests
-        run: |
-          echo "Running tests in environment: ${{ matrix.env }}"
-          python -m pytest GitHub-Actions/src/addition.py || echo "No tests found in addition.py"
- 
-      - name: Show script output
-        run: |
-          echo "Script output for environment: ${{ matrix.env }}"
-          if [ -f GitHub-Actions/src/addition.py ]; then
-            python GitHub-Actions/src/addition.py
-          else
-            echo "GitHub-Actions/src/addition.py not found in repo"
-          fi
+          cd src
+          echo "Applying changes for environment: ${{ matrix.env }}"
+          python addition.py
+          # Replace this with terraform apply or your real command
