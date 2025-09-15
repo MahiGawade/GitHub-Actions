@@ -11,14 +11,14 @@ jobs:
     outputs:
       matrix: ${{ steps.filter.outputs.matrix }}
     steps:
-      - name: Debug Labels
-        run: echo "Raw labels: ${{ join(github.event.pull_request.labels.*.name, ' | ') }}"
- 
+    
       - name: Collect Labels
         id: labels
-        run: |
-          echo "labels=${{ join(github.event.pull_request.labels.*.name, ' ') }}" >> $GITHUB_OUTPUT
- 
+        run: echo "labels=${{ join(github.event.pull_request.labels.*.name, ' ') }}" >> $GITHUB_OUTPUT
+
+      - name: Debug Labels
+        run: echo "Raw labels:${{ steps.labels.outputs.labels }}"
+        
       - name: Filter Matrix
         id: filter
         run: |
